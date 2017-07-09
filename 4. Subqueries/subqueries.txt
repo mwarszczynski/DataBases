@@ -1,0 +1,108 @@
+/* 1 */
+select nazwisko, etat, id_zesp
+from pracownicy
+where id_zesp = (select id_zesp
+from pracownicy
+where nazwisko = 'Nowak'
+)
+
+/* 2 */
+select Nazwisko, etat, zatrudniony
+from pracownicy
+where zatrudniony = (SELEct MIN(zatrudniony)
+from pracownicy
+where etat = 'profesor')
+
+/*3 */
+select	nazwisko, zatrudniony, id_zesp
+from	pracownicy 
+where zatrudniony in (SELEct max(zatrudniony)
+from pracownicy
+where id_zesp is not null
+group by id_zesp)
+order by zatrudniony
+
+/* 4 */
+select * 
+from Zespoly z
+where id_zesp not in (select ID_ZESP
+from pracownicy where ID_ZESP is not null )
+
+/* 5 */
+select nazwisko, placa_pod, etat
+from Pracownicy P
+where PLACA_POD > (select avg(placa_pod) from pracownicy where etat=p.ETAT group by ETAT)
+order by placa_pod desc
+
+/* 6 */
+select nazwisko, p.placa_pod
+from Pracownicy p
+where p.PLACA_POD > 0.75*(select placa_pod from pracownicy s where p.ID_SZEFA = s.ID_PRAC)
+order by NAZWISKO
+
+/* 7 */
+select *
+from Pracownicy p join Pracownicy s on p.id_prac = s.ID_SZEFA 
+where p.nazwisko not in (select p.nazwisko from Pracownicy p join Pracownicy s
+on p.ID_PRAC = s.ID_SZEFA where s.etat = 'doktorant') and p.etat = 'profesor'
+order by p.nazwisko
+
+/* 8 */
+select * 
+from zespoly z 
+where z.id_zesp not in 
+(select id_zesp from pracownicy p where p.id_zesp = z.ID_ZESP)
+
+/* 9 */
+SELECT ID_ZESP, SUM(PLACA_POD) FROM Pracownicy group by  id_zesp
+HAVING sum(placa_pod) = (select max(y.num) from (select sum(placa_pod) as num from
+PRACOWNICY GROUP BY id_zesp) y )
+
+/* 10 */
+select nazwisko, placa_pod
+from pracownicy p
+where (select count(*) from pracownicy where placa_pod > p.placa_pod) < 3
+order by placa_pod desc
+
+/* 11 */
+SELECT year(zatrudniony) as rok, COUNT(*) as liczba
+FROM PRACOWNICY P
+group by year(zatrudniony)
+order by liczba desc
+
+/* 12 */
+SELECT year(zatrudniony) as rok, COUNT(*) as liczba
+FROM PRACOWNICY P
+group by year(zatrudniony)
+having COUNT(*)  = (select max(y.num) from (SELECT COUNT(*) as num
+FROM PRACOWNICY P group by year(zatrudniony)) y) 
+
+/* 13 */
+select nazwisko, placa_pod, etat
+from Pracownicy P  
+where PLACA_POD < (select avg(placa_pod) from pracownicy where etat=p.ETAT group by ETAT)
+order by nazwisko 
+
+/* 14 */
+select p.nazwisko, p.placa_pod, p.etat, isnull(z.nazwa, '')
+from Pracownicy P left join Zespoly z on p.ID_ZESP = z.ID_ZESP
+where PLACA_POD < (select avg(placa_pod) from pracownicy where etat=p.ETAT group by ETAT)
+order by nazwisko 
+
+/* 15 */
+select nazwisko,
+(select count(*) from pracownicy where id_szefa = p.id_prac) liczba_podw
+from pracownicy p join zespoly z on p.id_zesp = z.id_zesp
+where etat = 'profesor'
+order by liczba_podw
+
+/* 16 */
+select nazwisko, 
+(select avg(placa_pod) from pracownicy where id_zesp = p.id_zesp) srednia, 
+(select max(placa_pod) from pracownicy) max_w_ins
+from pracownicy p
+where etat = 'profesor'
+
+/* 17 */
+select nazwisko, (select nazwa from zespoly where id_zesp = p.id_zesp) 
+from pracownicy p
